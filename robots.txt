@@ -1,4 +1,4 @@
 User-agent: *
 Disallow:
 
-Sitemap: https://geetikavadali.github.io/al-folio/sitemap.xml
+Sitemap: https://eulerbutcooler.github.io/sitemap.xml
