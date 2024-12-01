@@ -2,11 +2,11 @@
   type: map
   contents:
     - name: Full Name
-      value: Albert Einstein
+      value: Geetika Vadali
     - name: Date of Birth
-      value: 14th March 1879
+      value: 16th July 2003
     - name: Languages
-      value: English, German
+      value: English, French, Telugu
 
 - title: Education
   type: time_table

@@ -1,4 +1,4 @@
-# Table of Contents
+<!-- # Table of Contents
 
 - [Table of Contents](#table-of-contents)
 - [Installing and Deploying](#installing-and-deploying)
@@ -197,4 +197,4 @@ If you have extensively customized a previous version, it might be trickier to u
 You can still follow the steps above, but `git rebase` may result in merge conflicts that must be resolved.
 See [git rebase manual](https://help.github.com/en/github/using-git/about-git-rebase) and how to [resolve conflicts](https://help.github.com/en/github/using-git/resolving-merge-conflicts-after-a-git-rebase) for more information.
 If rebasing is too complicated, we recommend re-installing the new version of the theme from scratch and port over your content and changes from the previous version manually. You can use tools like [meld](https://meldmerge.org/)
-or [winmerge](https://winmerge.org/) to help in this process.
+or [winmerge](https://winmerge.org/) to help in this process. -->

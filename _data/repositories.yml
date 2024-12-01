@@ -1,14 +1,10 @@
 github_users:
-  - torvalds
-  - alshedivat
+  - geetikavadali
 
 repo_description_lines_max: 2
 
 github_repos:
-  - alshedivat/al-folio
-  - jekyll/jekyll
-  - twbs/bootstrap
-  - jquery/jquery
-  - FortAwesome/Font-Awesome
-  - mathjax/MathJax
-  - jpswalsh/academicons
+  - geetikavadali/Interpretable-Cancer-Classification
+  - geetikavadali/imperfectinfogames_te
+  - geetikavadali/Amazon-ML-Challenge-Entropy
+  - geetikavadali/DINO-pedestrian
