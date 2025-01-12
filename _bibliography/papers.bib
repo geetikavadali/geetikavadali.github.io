@@ -1,5 +1,34 @@
 ---
 ---
+@article{vadalishoulder2024,
+title={Shoulder Rotator Cuff Tear Detection From Ultrasound Videos Using
+Deep Reinforcement Learning},
+abstract={Rotator cuff tears (RCT) are common musculoskeletal injuries that significantly impact 
+patient mobility and quality of life. Ultrasound (US) is a real-time, cost-effective tool for 
+diagnosing RCT, offering dynamic assessment through video sweeps. However, these videos are 
+noisy and challenging to interpret, even for experts. They are also often quite long and contain 
+redundant frames which make it more timeconsuming for clinicians to identify key diagnostic details. 
+To address this, we developed a novel RCT assessment technique using Deep Reinforcement Learning (DRL)-based 
+video summarization approach, where the RL-agent mimics a human expert by analyzing the full video, selecting 
+diagnostically relevant frames, and then using CNN to classify the frames as intact or torn. The 
+innovative reward mechanism, emphasizing the frame dissimilarity and feature similarity, enhances 
+the RL agent’s frame selection process. This reduces computational complexity and storage requirements, 
+and simplifies the downstream classification task by focusing only on the keyframes indicative of RCTs. 
+Experimental results on 100 patients demonstrate that our proposed classification network achieved 85.0% 
+accuracy (90.0% sensitivity, 80.0% specificity) using the RL-generated video summary, outperforming full 
+video classification accuracy of 82.5%, while also reducing the training time by 50% (from 8 hours to 4 hours)
+, highlighting its potential to assist clinicians in more effective diagnosis. The DRL approach developed in 
+this work can be integrated into a low-cost US-AI tool that can reliably identify RCTs, thus improving access 
+to imaging, providing earlier disease diagnosis and enhancing patient care.},
+author={Geetika Vadali, Shrimanti Ghosh, Ayush Singh, Yuyue Zhou, Banafshe Felfeliyan, Assefa Wahd,
+Jessica Knight, Mahesh R. Panicker, Jacob L. Jaremko, Abhilash R. Hareendranathan},
+journal={Accepted at International Symposium on Biomedical Imaging 2025},
+location={Houston, Texas, United States},
+year={2025},
+month={April},
+selected={true}
+}
+
 @article{vadali2023convergence,
   title={Convergence to Nash Equilibrium: A Comparative Study of Rock-Paper-Scissors Algorithms},
   author={Geetika Vadali, M Deekshitha Reddy, Ritu Rani, Poonam Bansal},
@@ -40,33 +69,4 @@ location={IGDTUW, Delhi, India},
 year={2023},
 month={December},
 selected={true},
-}
-
-@article{vadalishoulder2024,
-title={Shoulder Rotator Cuff Tear Detection From Ultrasound Videos Using
-Deep Reinforcement Learning},
-abstract={Rotator cuff tears (RCT) are common musculoskeletal injuries that significantly impact 
-patient mobility and quality of life. Ultrasound (US) is a real-time, cost-effective tool for 
-diagnosing RCT, offering dynamic assessment through video sweeps. However, these videos are 
-noisy and challenging to interpret, even for experts. They are also often quite long and contain 
-redundant frames which make it more timeconsuming for clinicians to identify key diagnostic details. 
-To address this, we developed a novel RCT assessment technique using Deep Reinforcement Learning (DRL)-based 
-video summarization approach, where the RL-agent mimics a human expert by analyzing the full video, selecting 
-diagnostically relevant frames, and then using CNN to classify the frames as intact or torn. The 
-innovative reward mechanism, emphasizing the frame dissimilarity and feature similarity, enhances 
-the RL agent’s frame selection process. This reduces computational complexity and storage requirements, 
-and simplifies the downstream classification task by focusing only on the keyframes indicative of RCTs. 
-Experimental results on 100 patients demonstrate that our proposed classification network achieved 85.0% 
-accuracy (90.0% sensitivity, 80.0% specificity) using the RL-generated video summary, outperforming full 
-video classification accuracy of 82.5%, while also reducing the training time by 50% (from 8 hours to 4 hours)
-, highlighting its potential to assist clinicians in more effective diagnosis. The DRL approach developed in 
-this work can be integrated into a low-cost US-AI tool that can reliably identify RCTs, thus improving access 
-to imaging, providing earlier disease diagnosis and enhancing patient care.},
-author={Geetika Vadali, Shrimanti Ghosh, Ayush Singh, Yuyue Zhou, Banafshe Felfeliyan, Assefa Wahd,
-Jessica Knight, Mahesh R. Panicker, Jacob L. Jaremko, Abhilash R. Hareendranathan},
-journal={Accepted at International Symposium on Biomedical Imaging 2025},
-location={Houston, Texas, United States},
-year={2025},
-month={April},
-selected={true}
 }
