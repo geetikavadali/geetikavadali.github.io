@@ -1,7 +1,7 @@
 ---
 layout: post
 title: ISBI Acceptance
-date: 2nd January 2024
+date: 2nd January 2025
 inline: true
 related_posts: false
 ---
