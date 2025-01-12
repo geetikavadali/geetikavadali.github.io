@@ -6,9 +6,6 @@ inline: true
 related_posts: false
 ---
 
-Paper Accepted - Comparing Nash Equilibrium Convergence for Rock-Paper-Scissors Algorithms
+Paper Accepted - Comparing Nash Equilibrium Convergence for Rock-Paper-Scissors Algorithms at IEEE International Conference on Computing, Communication, and Intelligent Systems 2023, Sharda University, India
 
----
-
-Guided by Ritu Rani, Prof. <a href="https://www.igdtuw.ac.in/aids.php?name=poonambansal">Poonam Bansal</a>
 

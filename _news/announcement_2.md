@@ -6,8 +6,4 @@ inline: true
 related_posts: false
 ---
 
-Paper Accepted - Predicting Optimal Startup Exit Strategies with Ensemble Learning for Venture Capitalists
-
----
-
-Won the best paper award at Springer International Conference on Artificial Intelligence and Speech Technology 2023.
+Paper Accepted - Predicting Optimal Startup Exit Strategies with Ensemble Learning for Venture Capitalists. Won the best paper award at Springer International Conference on Artificial Intelligence and Speech Technology 2023.
