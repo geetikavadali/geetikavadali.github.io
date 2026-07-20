@@ -17,9 +17,9 @@ social: true # includes social icons at the bottom of the page
 ---
 
 I am pursuing my Masters degree in Computer Science from **Georgia Institute of Technology**.
-I currently reside in Metz, France (The Gateway to Europe!)
+I currently reside in Atlanta, Georgia! 
 
-As of recently, I have been dabbling with various flavours of **Computer Vision** from art conservation to robotic perception to curiosity-based open-world learning. Excited to discuss ideas and opportunities in any of these directions (or more) :) !
+Recently, I have been dabbling with various flavours of **Computer Vision** from art conservation to robotic perception to curiosity-based open-world learning. Excited to discuss ideas and opportunities in any of these directions (or more) :) !
 
 I am intrigued by computational fields that aims to explain and bridge the gap between human and machine intelligence. This goes from **Reinforcement Learning to Computational Neuroscience**. I believe that understanding the neural basis of cognition and behaviour can help us in building trustworthy and explainable AI systems. 
 
