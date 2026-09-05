@@ -1,0 +1,31 @@
+---
+layout: default
+title: blog
+pagination:
+  enabled: true
+  sort_field: 'date'
+  sort_reverse: true
+---
+
+<div class="post">
+  <header class="post-header">
+    <h1 class="post-title">{{ site.blog_name }}</h1>
+    <p class="post-description">{{ site.blog_description }}</p>
+  </header>
+
+  <ul class="post-list">
+    {% for post in paginator.posts %}
+      <li>
+        <h2>
+          <a class="post-title" href="{{ post.url | relative_url }}">{{ post.title }}</a>
+        </h2>
+        <p class="post-meta">{{ post.date | date: '%B %-d, %Y' }}</p>
+        {% if post.description %}
+          <div class="post-content">{{ post.description }}</div>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+
+  {% include pagination.liquid %}
+</div>
