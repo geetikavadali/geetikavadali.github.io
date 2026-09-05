@@ -132,8 +132,8 @@ bing_site_verification: # out your bing-site-verification ID (Bing Webmaster)
 # Blog
 # -----------------------------------------------------------------------------
 
-blog_name: Geetika's Blog # blog_name will be displayed in your blog page
-blog_description: notes on reinforcement learning, travel, and everything in between
+blog_name: my all-over-the-place blog # blog_name will be displayed in your blog page
+blog_description: travel, food, art, research, cs and humour
 permalink: /blog/:year/:title/
 lsi: false # produce an index for related posts
 
