@@ -1,0 +1,279 @@
+<div class="sketchbook">
+  {% for s in site.data.sketches %}
+    <template
+      class="sb-src"
+      data-image="{{ s.image }}"
+      data-left="{{ s.left }}"
+      data-right="{{ s.right }}"
+      data-title="{{ s.title }}"
+      data-w="{{ s.w | default: 1280 }}"
+      data-h="{{ s.h | default: 720 }}"
+    ></template>
+  {% endfor %}
+  <div class="sb-stage">
+    <button class="sb-arrow sb-prev" type="button" aria-label="previous spread">
+      <svg viewBox="0 0 14 44" width="14" height="44" fill="none" aria-hidden="true">
+        <polyline
+          points="11,3 3,22 11,41"
+          stroke="currentColor"
+          stroke-width="1.1"
+          stroke-linecap="round"
+          stroke-linejoin="round"></polyline>
+      </svg>
+    </button>
+    <div class="sb-book">
+      <div class="sb-base">
+        <div class="sb-half sb-half-l"></div>
+        <div class="sb-half sb-half-r"></div>
+      </div>
+      <div class="sb-cast sb-cast-left"></div>
+      <div class="sb-cast sb-cast-right"></div>
+      <div class="sb-sheet is-hidden">
+        <div class="sb-face sb-front"></div>
+        <div class="sb-face sb-back"></div>
+        <div class="sb-shade"></div>
+      </div>
+      <button class="sb-zone sb-zone-prev" type="button" tabindex="-1" aria-hidden="true"></button>
+      <button class="sb-zone sb-zone-next" type="button" tabindex="-1" aria-hidden="true"></button>
+    </div>
+    <button class="sb-arrow sb-next" type="button" aria-label="next spread">
+      <svg viewBox="0 0 14 44" width="14" height="44" fill="none" aria-hidden="true">
+        <polyline
+          points="3,3 11,22 3,41"
+          stroke="currentColor"
+          stroke-width="1.1"
+          stroke-linecap="round"
+          stroke-linejoin="round"></polyline>
+      </svg>
+    </button>
+  </div>
+  <p class="sb-caption">{{ site.data.sketches.first.title }}</p>
+</div>
+<script>
+  (function () {
+    var root = document.querySelector('.sketchbook');
+    if (!root) return;
+
+    var spreads = Array.prototype.map.call(root.querySelectorAll('.sb-src'), function (t) {
+      return {
+        image: t.dataset.image,
+        left: t.dataset.left,
+        right: t.dataset.right,
+        title: t.dataset.title,
+        w: parseInt(t.dataset.w, 10),
+        h: parseInt(t.dataset.h, 10)
+      };
+    });
+    if (!spreads.length) return;
+
+    function setHalf(el, s, side) {
+      var src = side === 'left' ? s.left : s.right;
+      if (s.image) {
+        el.style.backgroundImage = 'url("' + s.image + '")';
+        el.style.backgroundSize = '200% 100%';
+        el.style.backgroundPosition = side === 'left' ? '0% 50%' : '100% 50%';
+      } else if (src) {
+        el.style.backgroundImage = 'url("' + src + '")';
+        el.style.backgroundSize = '100% 100%';
+        el.style.backgroundPosition = '50% 50%';
+      } else {
+        el.style.backgroundImage = 'none';
+      }
+    }
+
+    function setSpreadHalves(s) {
+      setHalf(baseL, s, 'left');
+      setHalf(baseR, s, 'right');
+    }
+
+    // motion-blur filter defs (built via DOM so kramdown cannot lowercase them)
+    var svgns = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(svgns, 'svg');
+    svg.setAttribute('width', '0');
+    svg.setAttribute('height', '0');
+    svg.style.position = 'absolute';
+    svg.setAttribute('aria-hidden', 'true');
+    ['1:4 0', '2:10 0'].forEach(function (spec) {
+      var parts = spec.split(':');
+      var filter = document.createElementNS(svgns, 'filter');
+      filter.setAttribute('id', 'sb-mblur-' + parts[0]);
+      var blur = document.createElementNS(svgns, 'feGaussianBlur');
+      blur.setAttribute('stdDeviation', parts[1]);
+      filter.appendChild(blur);
+      svg.appendChild(filter);
+    });
+    root.insertBefore(svg, root.firstChild);
+
+    var book = root.querySelector('.sb-book');
+    var baseL = root.querySelector('.sb-half-l');
+    var baseR = root.querySelector('.sb-half-r');
+    var sheet = root.querySelector('.sb-sheet');
+    var front = sheet.querySelector('.sb-front');
+    var back = sheet.querySelector('.sb-back');
+    var caption = root.querySelector('.sb-caption');
+    var prevBtn = root.querySelector('.sb-arrow.sb-prev');
+    var nextBtn = root.querySelector('.sb-arrow.sb-next');
+    var zonePrev = root.querySelector('.sb-zone-prev');
+    var zoneNext = root.querySelector('.sb-zone-next');
+
+    var DURATION = 720;
+    var EASING = 'cubic-bezier(0.55, 0.06, 0.35, 1)';
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) DURATION = 0;
+
+    var index = 0;
+    var flipping = false;
+    var timers = [];
+
+    function later(fn, t) {
+      timers.push(setTimeout(fn, t));
+    }
+
+    function updateChrome() {
+      var first = index === 0;
+      var last = index === spreads.length - 1;
+      [prevBtn, zonePrev].forEach(function (el) {
+        el.classList.toggle('is-disabled', first);
+        el.setAttribute('aria-disabled', first ? 'true' : 'false');
+      });
+      [nextBtn, zoneNext].forEach(function (el) {
+        el.classList.toggle('is-disabled', last);
+        el.setAttribute('aria-disabled', last ? 'true' : 'false');
+      });
+      prevBtn.disabled = first;
+      nextBtn.disabled = last;
+    }
+
+    function setCaption(text) {
+      if (caption.textContent === text) return;
+      caption.classList.add('is-fading');
+      setTimeout(function () {
+        caption.textContent = text;
+        caption.classList.remove('is-fading');
+      }, 180);
+    }
+
+    function finalize(target) {
+      index = target;
+      setSpreadHalves(spreads[index]);
+      sheet.style.transition = 'none';
+      sheet.style.transform = 'rotateY(0deg)';
+      sheet.classList.remove('sb-dir-next', 'sb-dir-prev', 'sb-blur-1', 'sb-blur-2');
+      sheet.classList.add('is-hidden');
+      root.classList.remove('sb-casting-left', 'sb-casting-right');
+      flipping = false;
+      updateChrome();
+    }
+
+    function flip(dir) {
+      if (flipping) return;
+      var target = index + dir;
+      if (target < 0 || target >= spreads.length) return;
+
+      if (reduced) {
+        index = target;
+        setSpreadHalves(spreads[index]);
+        caption.textContent = spreads[index].title;
+        updateChrome();
+        return;
+      }
+
+      flipping = true;
+
+      if (dir === 1) {
+        setHalf(front, spreads[index], 'right');
+        setHalf(back, spreads[target], 'left');
+        sheet.style.transition = 'none';
+        sheet.style.transform = 'rotateY(0deg)';
+      } else {
+        setHalf(front, spreads[target], 'right');
+        setHalf(back, spreads[index], 'left');
+        sheet.style.transition = 'none';
+        sheet.style.transform = 'rotateY(-180deg)';
+      }
+
+      sheet.classList.remove('is-hidden');
+      sheet.classList.remove('sb-dir-next', 'sb-dir-prev', 'sb-blur-1', 'sb-blur-2');
+      sheet.classList.add(dir === 1 ? 'sb-dir-next' : 'sb-dir-prev');
+      void sheet.offsetWidth;
+
+      sheet.style.transition = 'transform ' + DURATION + 'ms ' + EASING;
+      sheet.style.transform = dir === 1 ? 'rotateY(-180deg)' : 'rotateY(0deg)';
+
+      later(function () {
+        setSpreadHalves(spreads[target]);
+        setCaption(spreads[target].title);
+        root.classList.remove('sb-casting-left', 'sb-casting-right');
+        root.classList.add(dir === 1 ? 'sb-casting-left' : 'sb-casting-right');
+      }, DURATION / 2);
+
+      later(function () {
+        sheet.classList.add('sb-blur-2');
+      }, DURATION * 0.28);
+      later(function () {
+        sheet.classList.remove('sb-blur-2');
+        sheet.classList.add('sb-blur-1');
+      }, DURATION * 0.5);
+      later(function () {
+        sheet.classList.remove('sb-blur-1');
+      }, DURATION * 0.78);
+
+      var done = false;
+      function finish() {
+        if (done) return;
+        done = true;
+        sheet.removeEventListener('transitionend', finish);
+        finalize(target);
+      }
+      sheet.addEventListener('transitionend', finish);
+      later(finish, DURATION + 140);
+    }
+
+    zonePrev.addEventListener('click', function () {
+      flip(-1);
+    });
+    zoneNext.addEventListener('click', function () {
+      flip(1);
+    });
+    prevBtn.addEventListener('click', function () {
+      flip(-1);
+    });
+    nextBtn.addEventListener('click', function () {
+      flip(1);
+    });
+
+    var startX = null;
+    book.addEventListener('pointerdown', function (e) {
+      startX = e.clientX;
+    });
+    book.addEventListener('pointerup', function (e) {
+      if (startX === null) return;
+      var dx = e.clientX - startX;
+      startX = null;
+      if (Math.abs(dx) > 45) flip(dx < 0 ? 1 : -1);
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.altKey || e.ctrlKey || e.metaKey) return;
+      var t = e.target;
+      if (
+        t &&
+        (t.tagName === 'INPUT' ||
+          t.tagName === 'TEXTAREA' ||
+          t.tagName === 'SELECT' ||
+          t.isContentEditable)
+      ) return;
+      if (e.key === 'ArrowRight') flip(1);
+      else if (e.key === 'ArrowLeft') flip(-1);
+    });
+
+    spreads.forEach(function (s) {
+      var im = new Image();
+      im.src = s.image;
+    });
+
+    book.style.aspectRatio = spreads[0].w + ' / ' + spreads[0].h;
+    setSpreadHalves(spreads[0]);
+    updateChrome();
+  })();
+</script>

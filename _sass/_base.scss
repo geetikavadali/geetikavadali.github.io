@@ -585,6 +585,23 @@ footer.sticky-bottom {
   }
 }
 
+.post-list-thumbnail {
+  width: 180px;
+  max-width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 4px;
+  display: block;
+}
+
+@media (max-width: 576px) {
+  .post-list-thumbnail {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 2;
+  }
+}
+
 .pagination {
   .page-item {
     .page-link {

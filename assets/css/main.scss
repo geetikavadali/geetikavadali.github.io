@@ -1,6 +1,6 @@
----
-# Only the main Sass file needs front matter (the dashes are enough)
----
+
+//Only the main Sass file needs front matter (the dashes are enough)
+
 @charset "utf-8";
 
 // Dimensions
@@ -11,6 +11,7 @@ $max-content-width: {{ site.max_width }};
   "themes",
   "layout",
   "base",
+  "sketchbook",
   "distill",
   "cv",
   "tabs",

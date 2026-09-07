@@ -1,0 +1,39 @@
+# Sketchbook spreads shown on the sketches page.
+#
+# Two ways to describe a spread:
+#
+# 1. A pair of single-page images (recommended - scan/photograph each page):
+#      - title: Strasbourg
+#        left:  /assets/img/sketches/<left-page>
+#        right: /assets/img/sketches/<right-page>
+#        w: 2235   # total spread width  (left + right widths at equal height)
+#        h: 705    # spread height
+#
+# 2. One pre-combined two-page spread image:
+#      - title: Osaka Castle
+#        image: /assets/img/sketches/osaka-castle.webp
+#        w: 1280
+#        h: 720
+#
+# Pages look best when both halves share the same height. The first entry is
+# the spread the book opens with. To add a sketch: drop the images into
+# assets/img/sketches/ and add an entry here.
+
+- title: Strasbourg, August '25
+  left: /assets/img/sketches/strasbourg-left.webp
+  right: /assets/img/sketches/strasbourg-right.webp
+  w: 2235
+  h: 705
+
+# test spreads - duplicates of the Strasbourg pages so the flip can be tried
+# out; remove these once real scans are added
+- title: Strasbourg, August '25
+  left: /assets/img/sketches/strasbourg-left.webp
+  right: /assets/img/sketches/strasbourg-right.webp
+  w: 2235
+  h: 705
+- title: Strasbourg, August '25
+  left: /assets/img/sketches/strasbourg-left.webp
+  right: /assets/img/sketches/strasbourg-right.webp
+  w: 2235
+  h: 705
