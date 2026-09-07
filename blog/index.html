@@ -16,13 +16,29 @@ pagination:
   <ul class="post-list">
     {% for post in paginator.posts %}
       <li>
-        <h2>
-          <a class="post-title" href="{{ post.url | relative_url }}">{{ post.title }}</a>
-        </h2>
-        <p class="post-meta">{{ post.date | date: '%B %-d, %Y' }}</p>
-        {% if post.description %}
-          <div class="post-content">{{ post.description }}</div>
-        {% endif %}
+        <div class="row align-items-center g-4">
+          <div class="col">
+            <h2>
+              <a class="post-title" href="{{ post.url | relative_url }}">{{ post.title }}</a>
+            </h2>
+            <p class="post-meta">{{ post.date | date: '%B %-d, %Y' }}</p>
+            {% if post.description %}
+              <div class="post-content">{{ post.description }}</div>
+            {% endif %}
+          </div>
+          {% if post.thumbnail %}
+            <div class="col-auto">
+              <a href="{{ post.url | relative_url }}">
+                <img
+                  src="{{ post.thumbnail }}"
+                  class="post-list-thumbnail"
+                  alt="Thumbnail for {{ post.title }}"
+                  loading="lazy"
+                >
+              </a>
+            </div>
+          {% endif %}
+        </div>
       </li>
     {% endfor %}
   </ul>
