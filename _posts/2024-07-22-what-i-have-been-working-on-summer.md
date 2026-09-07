@@ -3,7 +3,7 @@ layout: post
 title: "What I have been working on / summer of '24"
 date: 2024-07-22 02:14:47
 description: "conferences, hospitals, ethernets and libraries / heat warnings and snow falls"
-thumbnail: "https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F2ce33b44-b588-45b8-98a1-7ead0aef84a9_900x1600.jpeg"
+thumbnail: "https://substackcdn.com/image/fetch/w_480,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F2ce33b44-b588-45b8-98a1-7ead0aef84a9_900x1600.jpeg"
 tags:
   - substack
 ---

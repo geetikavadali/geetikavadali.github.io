@@ -3,7 +3,7 @@ layout: post
 title: "A gentle introduction to RL Theory"
 date: 2025-02-21 16:04:35
 description: "\"All intelligence can be described as subserving the maximisation of expected cumulative reward\""
-thumbnail: "https://substack-post-media.s3.amazonaws.com/public/images/75772c4f-efcf-4fb1-869b-4b1be49abd76_4608x3456.jpeg"
+thumbnail: "https://substackcdn.com/image/fetch/w_480,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F75772c4f-efcf-4fb1-869b-4b1be49abd76_4608x3456.jpeg"
 tags:
   - substack
 ---

@@ -3,7 +3,7 @@ layout: post
 title: "An introduction of the writer to the reader, if you will"
 date: 2024-04-05 18:12:03
 description: "The writer reads a lot about and around math and cs and wants to talk now for some reason. If that's what interests you - this would be a short read"
-thumbnail: "https://substack-post-media.s3.amazonaws.com/public/images/5146579c-1185-41e0-8ab5-fb347c5a0d5f_4608x3456.jpeg"
+thumbnail: "https://substackcdn.com/image/fetch/w_480,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F5146579c-1185-41e0-8ab5-fb347c5a0d5f_4608x3456.jpeg"
 tags:
   - substack
 ---

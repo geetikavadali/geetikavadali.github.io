@@ -3,7 +3,7 @@ layout: post
 title: "The divide-and-conquer of patriarchy and why it's harmful to humanity"
 date: 2024-04-12 09:10:51
 description: "Don’t let the powerful people with useless things to make, money to monger, temples to follow and a conservative society to impress decide what femininity is for you"
-thumbnail: "https://substackcdn.com/image/fetch/f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F9c95a922-e1e5-4b2c-8daa-11aa0d36b2e7_900x461.jpeg"
+thumbnail: "https://substackcdn.com/image/fetch/w_480,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F9c95a922-e1e5-4b2c-8daa-11aa0d36b2e7_900x461.jpeg"
 tags:
   - substack
 ---

@@ -24,7 +24,7 @@ import os
 import re
 import sys
 from datetime import datetime
-from urllib.parse import urlparse
+from urllib.parse import quote, urlparse
 
 import feedparser
 import requests
@@ -57,6 +57,19 @@ FIGURE_MARKER = re.compile(
 def slug_from_url(url: str) -> str:
     slug = urlparse(url).path.rstrip("/").split("/")[-1]
     return re.sub(r"[^A-Za-z0-9-]", "-", slug).strip("-")
+
+
+# Substack's cover images are full-resolution originals (often ~4MB at
+# 4600x3400). Route them through the substackcdn image proxy so the blog
+# listing loads a ~30-60KB rendition instead of the raw S3 file.
+THUMBNAIL_WIDTH = 480
+
+
+def normalize_thumbnail(url: str) -> str:
+    if not url or "substackcdn.com/image/fetch/" in url:
+        return url
+    transforms = f"w_{THUMBNAIL_WIDTH},c_limit,f_auto,q_auto:good,fl_progressive:steep"
+    return f"https://substackcdn.com/image/fetch/{transforms}/{quote(url, safe='')}"
 
 
 def fetch(url: str) -> requests.Response:
@@ -337,7 +350,7 @@ def write_post(entry, archive: dict, dry_run: bool):
 
     meta = archive.get(slug, {})
     description = (meta.get("subtitle") or entry.get("summary") or "").strip()
-    thumbnail = meta.get("cover_image") or ""
+    thumbnail = normalize_thumbnail(meta.get("cover_image") or "")
 
     body = to_markdown(get_body_html(entry))
 
