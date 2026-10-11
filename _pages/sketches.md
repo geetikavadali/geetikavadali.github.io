@@ -1,6 +1,6 @@
 ---
 layout: page
-title: my sketchbook spreads
+title: sketchbook
 permalink: /sketches/
 description: things i have seen and saved on pen, paper and paint (sometimes via random receipts and stickers)
 nav: true
