@@ -18,26 +18,23 @@
 # Pages look best when both halves share the same height. The first entry is
 # the spread the book opens with. To add a sketch: drop the images into
 # assets/img/sketches/ and add an entry here.
-#
-# Pages are kept as WebP (a few tens of KB each); export new scans with
-#   magick page.png -alpha off -define webp:method=6 -quality 90 page.webp
 
 - title: Strasbourg, August '25
   left: /assets/img/sketches/strasbourg-left.webp
-  right: /assets/img/sketches/strasbourg-right.webp
+  right: /assets/img/sketches/strasbourg-right.png
   w: 2235
   h: 705
 
 # test spreads - duplicates of the Strasbourg pages so the flip can be tried
 # out; remove these once real scans are added
 - title: Paris, October '25
-  left: /assets/img/sketches/2-left.webp
-  right: /assets/img/sketches/2-right.webp
+  left: /assets/img/sketches/2-left.png
+  right: /assets/img/sketches/2-right.png
   w: 2235
   h: 705
 
 - title: Paris, October '25
-  left: /assets/img/sketches/3-left.webp
-  right: /assets/img/sketches/3-right.webp
+  left: /assets/img/sketches/3-left.png
+  right: /assets/img/sketches/3-right.png
   w: 2235
   h: 705

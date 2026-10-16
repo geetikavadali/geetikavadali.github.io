@@ -18,7 +18,7 @@ In my first semester of college, taking a course on Intelligent Systems (very in
 
 I started reading amazing research papers, following amazing researchers, and reading about their journeys through CS, and I am always very inspired. I am also an avid reader. Agatha Christie kindled the habit that has taken me from Stephen King to Brian Christian to Vaclav Smil. As Mark Twain said, “The man who does not read has no advantage over the man who cannot read.” This helps pretty well. I sketch+paint a few times a month to justify the overloaded art supplies drawer somehow.
 
-Through these blogs, I’d want to document what I have learned, explore the craft, and chronicle how I break and fix stuff. This is definitely more of a personal journal than something I _need_ readers for. Feel free to accompany though; I’d love to hear from you.
+Through these blogs, I’d want to document what I have learned, explore the craft, and chronicle how I break and fix stuff. This is definitely more of a personal journal than something I *need* readers for. Feel free to accompany though; I’d love to hear from you.
 
 With admiration and gratitude,
 

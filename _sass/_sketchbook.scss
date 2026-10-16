@@ -86,11 +86,16 @@
 
     // constant soft spine shading
     &::after {
-      content: "";
+      content: '';
       position: absolute;
       inset: 0;
       border-radius: 6px;
-      background: linear-gradient(90deg, transparent calc(50% - 34px), rgba(0, 0, 0, 0.14) 50%, transparent calc(50% + 34px));
+      background: linear-gradient(
+        90deg,
+        transparent calc(50% - 34px),
+        rgba(0, 0, 0, 0.14) 50%,
+        transparent calc(50% + 34px)
+      );
       pointer-events: none;
     }
   }
@@ -100,8 +105,8 @@
     top: 0;
     bottom: 0;
     width: 50%;
-    overflow: hidden;
     background-color: #f4f0e6;
+    background-repeat: no-repeat;
 
     &.sb-half-l {
       left: 0;
@@ -111,33 +116,6 @@
     &.sb-half-r {
       right: 0;
       border-radius: 0 6px 6px 0;
-    }
-  }
-
-  // the page images themselves: preloaded and decoded before they are shown
-  .sb-img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: fill;
-    opacity: 0;
-    // a page fades in as it arrives. The theme's `html.transition *` rule forces
-    // `transition: all 750ms !important` on every element for half a second
-    // after load, so our own timing has to be marked important too.
-    transition: opacity 0.45s ease !important;
-    pointer-events: none;
-    user-select: none;
-    -webkit-user-drag: none;
-
-    &.is-ready {
-      opacity: 1;
-    }
-
-    // pages that were already decoded when they were placed appear at once
-    &.is-inst {
-      transition: none !important;
     }
   }
 
@@ -184,9 +162,10 @@
   .sb-face {
     position: absolute;
     inset: 0;
-    overflow: hidden;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
+    background-size: 200% 100%;
+    background-repeat: no-repeat;
     border-radius: 6px;
     box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
 
@@ -217,33 +196,11 @@
   }
 
   .sb-blur-1 .sb-face {
-    filter: url("#sb-mblur-1");
+    filter: url('#sb-mblur-1');
   }
 
   .sb-blur-2 .sb-face {
-    filter: url("#sb-mblur-2");
-  }
-
-  // covers a page that is still on its way (or the very first one)
-  .sb-wait {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    z-index: 6;
-    width: 26px;
-    height: 26px;
-    margin: -13px 0 0 -13px;
-    border: 2px solid rgba(72, 60, 46, 0.25);
-    border-top-color: rgba(72, 60, 46, 0.8);
-    border-radius: 50%;
-    opacity: 0;
-    transition: opacity 0.25s ease;
-    pointer-events: none;
-  }
-
-  &.is-loading .sb-wait {
-    opacity: 1;
-    animation: sb-spin 0.9s linear infinite;
+    filter: url('#sb-mblur-2');
   }
 
   .sb-zone {
@@ -290,36 +247,6 @@
       opacity: 0;
     }
   }
-
-  // how much of the book has been fetched so far: pinned just under the book
-  // so it never moves the caption
-  .sb-progress {
-    position: absolute;
-    bottom: -0.9rem;
-    left: 50%;
-    width: 100%;
-    height: 2px;
-    transform: translateX(-50%);
-    border-radius: 2px;
-    background: rgba(127, 127, 127, 0.2);
-    overflow: hidden;
-    opacity: 1;
-    transition: opacity 0.6s ease;
-    pointer-events: none;
-
-    span {
-      display: block;
-      width: 0;
-      height: 100%;
-      border-radius: inherit;
-      background: var(--global-text-color-light);
-      transition: width 0.25s ease;
-    }
-  }
-
-  &.sb-loaded .sb-progress {
-    opacity: 0;
-  }
 }
 
 @keyframes sb-shade-flip {
@@ -354,25 +281,11 @@
   }
 }
 
-@keyframes sb-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .sketchbook {
     .sb-sheet,
     .sb-shade {
       transition: none !important;
-      animation: none !important;
-    }
-
-    .sb-img {
-      transition: none !important;
-    }
-
-    &.is-loading .sb-wait {
       animation: none !important;
     }
   }

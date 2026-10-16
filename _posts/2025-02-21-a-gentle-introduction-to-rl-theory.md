@@ -2,7 +2,7 @@
 layout: post
 title: "A gentle introduction to RL Theory"
 date: 2025-02-21 16:04:35
-description: '"All intelligence can be described as subserving the maximisation of expected cumulative reward"'
+description: "\"All intelligence can be described as subserving the maximisation of expected cumulative reward\""
 thumbnail: "https://substackcdn.com/image/fetch/w_480,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F75772c4f-efcf-4fb1-869b-4b1be49abd76_4608x3456.jpeg"
 tags:
   - substack
@@ -45,25 +45,23 @@ Terminology
 
 - **History**: the sequence of observations, actions and rewards over the past. The history at time t denotes all the observable variables up to a time t. The future is dependent on this history.
 
-\\(H_t = A_1, O_1, R_1, A_2, ..., A_t, O_t, R_t\\)
+\\(H\_t = A\_1, O\_1, R\_1, A\_2, ..., A\_t, O\_t, R\_t\\)
+- **State**: Summary of all the required information to determine what happens next. *The state is a function of the history*.
 
-- **State**: Summary of all the required information to determine what happens next. _The state is a function of the history_.
-
-\\(S_t = f(H_t)\\)
-
+\\(S\_t = f(H\_t)\\)
 - **Environment State and Agent State**:
 
   Environment State is the environment’s private representation - all the information that environment uses to pick the next observation/reward.
 
   Agent State is the agent’s internal representation - all the information the agent uses to pick the next action. And this is precisely all the information used by RL algorithms.
 
-\\(Environment State : S_t^e, Agent State : S_t^a\\)
+\\(Environment State : S\_t^e, Agent State : S\_t^a\\)
 
 **Components of an RL Agent**
 
 An RL agent may include one or more of these functional information -
 
-- _Policy_ function describes the agent’s behaviour
+- *Policy* function describes the agent’s behaviour
 
   - It is a map from state to action
   - A deterministic policy would mean that a unique action ensures the best reward whenever state S happens. A stochastic policy, on the other hand, does not guarantee this, and an action does not have a unique link to the state.
@@ -72,12 +70,10 @@ An RL agent may include one or more of these functional information -
   <img src="https://substackcdn.com/image/fetch/$s_!skFT!,w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F50f81595-bec0-46a0-8eb9-24b5e9bfb233_770x101.png" width="770" height="101" loading="lazy" data-zoomable />
   <figcaption class="caption">A deterministic policy pi is a one-one mapping function between an action a and state S. A stochastic policy pi is a probability distribution of actions given the state S</figcaption>
 </figure>
-
-- _Value_ function describes the utility or goodness of each state and/or action
+- *Value* function describes the utility or goodness of each state and/or action
 
   - The value function is a prediction of the future reward given the information state and available action choices. We want to choose the action that maximises the value function.
-
-- _Model_ function describes the agent’s representation of the environment.
+- *Model* function describes the agent’s representation of the environment.
 
   - A model predicts what the environment will do in response to a state and an action over that state.
 
@@ -95,7 +91,7 @@ The majority of all RL algorithms are designed for optimising over these three c
   <img src="https://substackcdn.com/image/fetch/$s_!jFVO!,w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Facb0c3d5-e92a-4d8a-a362-fa86bc4946bb_1223x187.png" width="1223" height="187" loading="lazy" data-zoomable />
 </figure>
 
-This means that the state St is a _sufficient statistic_ of the future. All of the history of observations, actions and rewards can be explained and encompassed through this one variable, and is sufficient to predict the next action and observation.
+This means that the state St is a *sufficient statistic* of the future. All of the history of observations, actions and rewards can be explained and encompassed through this one variable, and is sufficient to predict the next action and observation.
 
 Markov Process: is a memoryless random process, i.e. a sequence of random states S1,S2,… with the Markov property. A Markov process (or Markov chain) is a tuple <S,P> where:
 
@@ -114,7 +110,7 @@ Markov Process: is a memoryless random process, i.e. a sequence of random states
   <img src="https://substackcdn.com/image/fetch/$s_!sqeG!,w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F55e2ae2e-e09b-40eb-883f-96783f333ee7_980x590.png" width="980" height="590" loading="lazy" data-zoomable />
 </figure>
 
-Why _discount?_ To keep the math bounded and avoid infinite returns in cyclic markov chains. It is also more likely (wrt rich environments) that immediate rewards have more value in determining utility of an action than a delayed reward that’s harder to map. It is still possible to use discounted Markov reward processes if all sequences definitely terminate.
+Why *discount?* To keep the math bounded and avoid infinite returns in cyclic markov chains. It is also more likely (wrt rich environments) that immediate rewards have more value in determining utility of an action than a delayed reward that’s harder to map. It is still possible to use discounted Markov reward processes if all sequences definitely terminate.
 
 In the (hopefully soon) blogpost, I’d go deeper into the math of value functions, returns, the Bellman Equations and introduce the paradigm of dynamic programming in RL.
 
