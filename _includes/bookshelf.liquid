@@ -1,0 +1,881 @@
+{%- comment -%}
+  Bookshelf. A bookcase of spines, built from _data/books.yml: books are packed
+  into shelves by the width they need, each spine carries the anatomy of a real
+  hardback, and clicking one opens its cover, blurb and review underneath.
+
+  Geometry and colour come from the data (pages set a spine's thickness and
+  height); everything else is CSS. See _sass/_bookshelf.scss for the case and
+  _data/books.yml for the fields. A book can also be linked to directly with
+  ?book=<slug>.
+{%- endcomment -%}
+{%- assign bs_books = site.data.books -%}
+<div class="bookshelf" data-bookshelf>
+  {% for b in bs_books %}
+    <template
+      class="bs-src"
+      data-title="{{ b.title | escape }}"
+      data-subtitle="{{ b.subtitle | escape }}"
+      data-spine-title="{{ b.spine_title | escape }}"
+      data-author="{{ b.author | escape }}"
+      data-cover="{{ b.cover }}"
+      data-rating="{{ b.rating }}"
+      data-status="{{ b.status }}"
+      data-shelf="{{ b.shelf }}"
+      data-year="{{ b.year }}"
+      data-pages="{{ b.pages }}"
+      data-started="{{ b.started }}"
+      data-finished="{{ b.finished }}"
+      data-added="{{ b.added }}"
+      data-height="{{ b.height }}"
+      data-thickness="{{ b.thickness }}"
+      data-genres="{{ b.genres | join: '|' | escape }}"
+      data-description="{{ b.description | escape }}"
+      data-review="{{ b.review | escape }}"
+      data-series="{{ b.series | escape }}"
+      data-spine="{{ b.spine }}"
+      data-slug="{{ b.slug | default: b.title | slugify }}"
+      data-link="{{ b.links.link }}"
+      data-goodreads="{{ b.links.goodreads }}"
+      data-openlibrary="{{ b.links.openlibrary }}"
+      data-hardcover="{{ b.links.hardcover }}"
+    ></template>
+  {% endfor %}
+
+  <p class="bs-foot">
+    <span class="bs-hint">click a spine to open it</span>
+    <span class="bs-key bs-key-ribbon">reading</span>
+    <span class="bs-key bs-key-faded">to read</span>
+    <span class="bs-readout" data-bs-readout></span>
+  </p>
+
+  <div data-bs-shelves></div>
+  <div class="bs-case is-template" data-bs-case hidden>
+    <div class="bs-rail" aria-hidden="true"></div>
+    {% if bs_books.size == 0 %}
+      <p class="bs-empty">nothing on this shelf yet</p>
+    {% endif %}
+    <div data-bs-rows></div>
+    <div class="bs-plinth" aria-hidden="true"></div>
+    <div class="bs-post bs-post-l" aria-hidden="true"></div>
+    <div class="bs-post bs-post-r" aria-hidden="true"></div>
+    <noscript>
+      <ul class="bs-noscript">
+        {% for b in bs_books %}
+          <li>
+            {{ b.title }}
+            <span>{{ b.author }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    </noscript>
+  </div>
+
+  <dialog class="bs-modal" data-bs-modal aria-label="the opened book">
+    <section class="bs-panel" data-bs-panel id="bs-panel" tabindex="-1"></section>
+  </dialog>
+</div>
+<script>
+  (function () {
+    var root = document.querySelector('[data-bookshelf]');
+    if (!root) return;
+
+    var NS = 'http://www.w3.org/2000/svg';
+    var POST = 14; // .bs-post width, or the width the shelves lose
+    var FOOT = 8; // the board's lip sits over the feet by this much
+
+    // ---- the shelf's data -------------------------------------------------
+    var books = Array.prototype.map.call(root.querySelectorAll('.bs-src'), function (t, i) {
+      var d = t.dataset;
+      return {
+        i: i,
+        title: d.title || '',
+        subtitle: d.subtitle || '',
+        spineTitle: d.spineTitle || d.title || '',
+        author: d.author || '',
+        cover: d.cover || '',
+        rating: parseFloat(d.rating) || 0,
+        status: (d.status || 'read').toLowerCase(),
+        shelf: d.shelf || 'read',
+        year: d.year || '',
+        pages: parseInt(d.pages, 10) || 0,
+        started: d.started || '',
+        finished: d.finished || '',
+        added: d.added || '',
+        height: parseInt(d.height, 10) || 0,
+        thickness: parseInt(d.thickness, 10) || 0,
+        genres: (d.genres || '').split('|').filter(Boolean),
+        description: plain(d.description),
+        review: plain(d.review),
+        spine: d.spine || '',
+        slug: d.slug || 'book',
+        series: d.series || '',
+        links: [
+          ['Hardcover', d.hardcover],
+          ['Goodreads', d.goodreads],
+          ['Open Library', d.openlibrary],
+          ['About', d.link],
+        ].filter(function (l) {
+          return !!l[1];
+        }),
+      };
+    });
+    if (!books.length) return;
+
+    var shelvesEl = root.querySelector('[data-bs-shelves]');
+    var caseTpl = root.querySelector('[data-bs-case]');
+    var caseEl = caseTpl; // the widest case, for lining the card up with
+    var panel = root.querySelector('[data-bs-panel]');
+    var modal = root.querySelector('[data-bs-modal]');
+    var readout = root.querySelector('[data-bs-readout]');
+    var spines = {}; // book index -> button
+    var domOrder = []; // the same buttons, in the order they are shelved
+    var open = null;
+    var focusI = 0;
+    var avail = 0; // width a shelf of books can use
+    var widest = 0; // the widest packed shelf
+
+    // ---- helpers ----------------------------------------------------------
+    // data comes from YAML or an API: strip markup and read the common
+    // entities rather than parsing HTML, so nothing in the data can execute.
+    // Reviews were written in paragraphs, so newlines survive; every other run
+    // of whitespace is squeezed to a single space.
+    function plain(s) {
+      return String(s || '')
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/&nbsp;/gi, ' ')
+        .replace(/&lt;/gi, '<')
+        .replace(/&gt;/gi, '>')
+        .replace(/&quot;/gi, '"')
+        .replace(/&#0?39;|&apos;|&rsquo;|&lsquo;/gi, "'")
+        .replace(/&mdash;/gi, '\u2014')
+        .replace(/&amp;/gi, '&')
+        .replace(/[^\S\n]+/g, ' ')
+        .replace(/ ?\n ?/g, '\n')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+    }
+
+    function clamp(n, lo, hi) {
+      return Math.min(hi, Math.max(lo, n));
+    }
+
+    function el(tag, cls, text) {
+      var n = document.createElement(tag);
+      if (cls) n.className = cls;
+      if (text != null) n.textContent = text;
+      return n;
+    }
+
+    function hash(s) {
+      var h = 2166136261;
+      for (var i = 0; i < s.length; i++) {
+        h ^= s.charCodeAt(i);
+        h = (h * 16777619) >>> 0;
+      }
+      return h;
+    }
+
+    // pages set both the thickness and the height of a spine, as they roughly
+    // do on a real shelf (a 110-page novella is slim and short, a 780-page
+    // doorstop is fat and tall). A book can override either in the data.
+    function spineOf(b) {
+      return {
+        w: b.thickness || Math.round(clamp(18 + b.pages / 10, 22, 70)),
+        h: b.height || Math.round(clamp(120 + b.pages / 5.5, 124, 200)),
+      };
+    }
+
+    // cloth from the title, nudged so two books side by side are never the
+    // same colour
+    function clothAt(b, prev) {
+      var tone = hash(b.title + b.author) % 8;
+      if (prev != null && tone === prev) tone = (tone + 3) % 8;
+      return tone;
+    }
+
+    function assignCloth() {
+      var prev = null;
+      books.forEach(function (b) {
+        if (b.spine) return;
+        b.tone = clothAt(b, prev);
+        prev = b.tone;
+      });
+    }
+
+    function clothCss(b) {
+      if (b.spine) return b.spine;
+      return 'var(--bs-cloth-' + ((b.tone == null ? hash(b.title) % 8 : b.tone) + 1) + ')';
+    }
+
+    function statusLabel(s) {
+      if (s === 'reading') return 'reading';
+      if (s === 'to-read') return 'to read';
+      if (s === 'did-not-finish') return 'did not finish';
+      return 'read';
+    }
+
+    function day(d) {
+      if (!d) return '';
+      var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(d));
+      if (!m) return String(d);
+      var when = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+      return when.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+    }
+
+    function starSvg(frac, n) {
+      var svg = document.createElementNS(NS, 'svg');
+      svg.setAttribute('viewBox', '0 0 24 24');
+      svg.setAttribute('aria-hidden', 'true');
+      var d = 'M12 2.6l2.9 6 6.6 1-4.8 4.6 1.2 6.5-5.9-3.1-5.9 3.1 1.2-6.5L2.5 9.6l6.6-1z';
+      var base = document.createElementNS(NS, 'path');
+      base.setAttribute('d', d);
+      base.setAttribute('fill', 'currentColor');
+      base.setAttribute('opacity', '0.18');
+      svg.appendChild(base);
+      if (frac > 0) {
+        var on = document.createElementNS(NS, 'path');
+        on.setAttribute('d', d);
+        on.setAttribute('fill', 'currentColor');
+        if (frac < 1) {
+          var id = 'bs-clip-' + n + '-' + Math.round(frac * 100);
+          var cp = document.createElementNS(NS, 'clipPath');
+          cp.setAttribute('id', id);
+          var rect = document.createElementNS(NS, 'rect');
+          rect.setAttribute('x', '0');
+          rect.setAttribute('y', '0');
+          rect.setAttribute('width', String(24 * frac));
+          rect.setAttribute('height', '24');
+          cp.appendChild(rect);
+          svg.appendChild(cp);
+          on.setAttribute('clip-path', 'url(#' + id + ')');
+        }
+        svg.appendChild(on);
+      }
+      return svg;
+    }
+
+    function starsOf(rating) {
+      var wrap = el('div', 'bs-stars');
+      wrap.setAttribute('role', 'img');
+      wrap.setAttribute('aria-label', rating + ' of 5');
+      for (var i = 1; i <= 5; i++) {
+        var frac = rating >= i ? 1 : rating > i - 1 ? Math.round((rating - (i - 1)) * 2) / 2 : 0;
+        wrap.appendChild(starSvg(frac, i));
+      }
+      return wrap;
+    }
+
+    // ---- the case ---------------------------------------------------------
+    // shelves are packed against the width the case can offer, then the case
+    // is pulled in to hug the widest shelf, so a short shelf never floats in a
+    // wide empty frame
+    function pack(list) {
+      avail = root.clientWidth - 2 * POST - 2;
+      if (avail <= 0) return null;
+      var rows = [];
+      var row = [];
+      var used = 0;
+      widest = 0;
+      list.forEach(function (b) {
+        var w = spineOf(b).w;
+        if (row.length && used + w > avail) {
+          rows.push(row);
+          widest = Math.max(widest, used);
+          row = [];
+          used = 0;
+        }
+        row.push(b);
+        used += w;
+      });
+      if (row.length) {
+        rows.push(row);
+        widest = Math.max(widest, used);
+      }
+      return rows;
+    }
+
+    function bookEl(b) {
+      var g = spineOf(b);
+      var btn = el('button', 'bs-book');
+      btn.type = 'button';
+      btn.style.setProperty('--w', g.w + 'px');
+      btn.style.setProperty('--h', g.h + 'px');
+      btn.style.setProperty('--cloth', clothCss(b));
+      var fs = g.w >= 44 ? 1 : g.w >= 30 ? 0.9 : g.w >= 24 ? 0.82 : 0.74;
+      btn.style.setProperty('--fs', fs + 'rem');
+      btn.dataset.fs = String(fs);
+      btn.dataset.i = String(b.i);
+      if (b.status === 'reading') btn.classList.add('is-reading');
+      if (b.status === 'to-read') btn.classList.add('is-toread');
+      if (g.w < 27) btn.classList.add('is-narrow');
+      btn.tabIndex = -1;
+      btn.setAttribute('aria-controls', 'bs-panel');
+      btn.setAttribute('aria-expanded', 'false');
+      var label = b.title;
+      if (b.author) label += ', ' + b.author;
+      label += ', ' + statusLabel(b.status);
+      btn.setAttribute('aria-label', label);
+
+      btn.appendChild(el('span', 'bs-head'));
+      btn.appendChild(el('span', 'bs-rule bs-rule-top'));
+      var t = el('span', 'bs-title');
+      var tspan = el('span', null, b.spineTitle);
+      t.appendChild(tspan);
+      btn.appendChild(t);
+      btn.appendChild(el('span', 'bs-rule bs-rule-bot'));
+      if (b.author) btn.appendChild(el('span', 'bs-author', b.author.split(' ').slice(-1)[0]));
+      if (b.status === 'reading') btn.appendChild(el('span', 'bs-ribbon'));
+      btn.addEventListener('click', function () {
+        focusI = b.i;
+        if (open === b) close();
+        else show(b, btn);
+      });
+      btn.addEventListener('pointerenter', function () {
+        describe(b);
+        warm(b);
+      });
+      // a finger or pen lands before the click: start the cover early, so the
+      // card opens onto an image that is already there
+      btn.addEventListener('pointerdown', function () {
+        warm(b);
+      });
+      btn.addEventListener('focus', function () {
+        focusI = b.i;
+        describe(b);
+        warm(b);
+      });
+      btn.addEventListener('pointerleave', function () {
+        brief();
+      });
+      btn.addEventListener('blur', function () {
+        brief();
+      });
+      spines[b.i] = btn;
+      domOrder.push(btn);
+      return btn;
+    }
+
+    var SHELVES = ['currently-reading', 'recently-read', 'favorites'];
+    var SHELF_LABELS = {
+      'currently-reading': 'currently reading',
+      'recently-read': 'recently read',
+      favorites: 'favorites',
+    };
+
+    function label(slug) {
+      return SHELF_LABELS[slug] || slug.replace(/-/g, ' ');
+    }
+
+    // the shelf's books, grouped and in the order the shelves read
+    function grouped() {
+      var byShelf = {};
+      books.forEach(function (b) {
+        (byShelf[b.shelf] = byShelf[b.shelf] || []).push(b);
+      });
+      var order = SHELVES.filter(function (s) {
+        return byShelf[s] && byShelf[s].length;
+      });
+      Object.keys(byShelf).forEach(function (s) {
+        if (order.indexOf(s) === -1) order.push(s);
+      });
+      return order.map(function (s) {
+        return { slug: s, books: byShelf[s] };
+      });
+    }
+
+    // one row of books: a stage to stand them on, and the board in front of
+    // their feet
+    function rowEl(row) {
+      var maxH = row.reduce(function (m, b) {
+        return Math.max(m, spineOf(b).h);
+      }, 0);
+      var el_ = el('div', 'bs-row');
+      el_.style.setProperty('--row-h', maxH + 'px');
+      var stage = el('div', 'bs-stage');
+      var booksEl = el('div', 'bs-books');
+      row.forEach(function (b) {
+        booksEl.appendChild(bookEl(b));
+      });
+      stage.appendChild(booksEl);
+      el_.appendChild(stage);
+      el_.appendChild(el('div', 'bs-board'));
+      return el_;
+    }
+
+    function render() {
+      assignCloth();
+      shelvesEl.textContent = '';
+      domOrder = [];
+      var groups = grouped();
+      if (!groups.length) return;
+
+      // the case, pulled in to the widest row it holds
+      var caseEl = caseTpl.cloneNode(true);
+      caseEl.classList.remove('is-template');
+      caseEl.hidden = false;
+      var host = caseEl.querySelector('[data-bs-rows]');
+      var widest = 0;
+      groups.forEach(function (g) {
+        var block = el('div', 'bs-section');
+        var head = el('div', 'bs-section-label');
+        head.appendChild(el('span', 'bs-section-name', label(g.slug)));
+        head.appendChild(el('span', 'bs-section-count', g.books.length + (g.books.length === 1 ? ' book' : ' books')));
+        block.appendChild(head);
+        (pack(g.books) || []).forEach(function (row) {
+          widest = Math.max(
+            widest,
+            row.reduce(function (n, b) {
+              return n + spineOf(b).w;
+            }, 0)
+          );
+          block.appendChild(rowEl(row));
+        });
+        host.appendChild(block);
+      });
+      shelvesEl.appendChild(caseEl);
+
+      // one wide case: the width is the width the page gives it, so more books
+      // fit on a shelf; the sections inside keep their own rows
+      var want = Math.min(Math.max(widest + 8, Math.min(720, avail)), avail);
+      caseEl.style.width = want + 2 * POST + 2 + 'px';
+      root.style.setProperty('--case-w', Math.round(want + 2 * POST + 2) + 'px');
+      numbers();
+      domOrder.forEach(function (b, i) {
+        b.tabIndex = Number(b.dataset.i) === focusI ? 0 : i === 0 ? 0 : -1;
+      });
+      if (
+        !domOrder.some(function (b) {
+          return b.tabIndex === 0;
+        }) &&
+        domOrder.length
+      ) {
+        domOrder[0].tabIndex = 0;
+      }
+      if (open) {
+        open.btn.classList.add('is-open');
+        open.btn.setAttribute('aria-expanded', 'true');
+      }
+    }
+
+    // set the type to fit the spine: a long title on a slim spine goes down a
+    // size or two rather than being cut off, and if it still will not fit it
+    // runs in a second column the way a thin book's spine does
+    function numbers() {
+      var REM = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+      Array.prototype.forEach.call(root.querySelectorAll('.bs-book'), function (btn) {
+        var box = btn.querySelector('.bs-title');
+        var span = box && box.firstElementChild;
+        if (!span) return;
+        var fs = parseFloat(btn.dataset.fs) || 0.72;
+        box.classList.remove('is-wrap');
+        span.style.fontSize = fs + 'rem';
+        var avail = box.clientHeight;
+        var need = span.scrollHeight;
+        if (avail > 0 && need > avail) {
+          var one = (fs * avail) / need - 0.02;
+          if (one >= 0.5) {
+            span.style.fontSize = one.toFixed(3) + 'rem';
+          } else {
+            // as many columns as the title needs and the spine can hold
+            var best = 0;
+            for (var cols = 2; cols <= 4; cols++) {
+              var byLength = (cols * avail * fs) / need;
+              var byWidth = box.clientWidth / (cols * 1.14) / REM;
+              var f = Math.min(fs, byLength, byWidth);
+              if (f > best) best = f;
+            }
+            if (best >= 0.45) {
+              box.classList.add('is-wrap');
+              span.style.fontSize = best.toFixed(3) + 'rem';
+            } else {
+              span.style.fontSize = Math.max(0.42, one).toFixed(3) + 'rem';
+            }
+          }
+        }
+
+        // the name at the tail: go down a size to fit, and step aside if it
+        // still will not
+        var au = btn.querySelector('.bs-author');
+        if (au) {
+          au.style.display = '';
+          au.style.fontSize = '';
+          if (au.scrollWidth > au.clientWidth) {
+            au.style.fontSize = '0.42rem';
+            if (au.scrollWidth > au.clientWidth) au.style.display = 'none';
+          }
+        }
+      });
+    }
+
+    // ---- the book card ----------------------------------------------------
+    function show(b, btn) {
+      if (open && open.btn !== btn) {
+        open.btn.classList.remove('is-open');
+        open.btn.setAttribute('aria-expanded', 'false');
+      }
+      open = { book: b, btn: btn };
+      btn.classList.add('is-open');
+      btn.setAttribute('aria-expanded', 'true');
+      panel.textContent = '';
+      panel.setAttribute('aria-label', 'the opened book - ' + b.title);
+
+      var closeBtn = el('button', 'bs-close', '\u00d7');
+      closeBtn.type = 'button';
+      closeBtn.setAttribute('aria-label', 'close the book');
+      closeBtn.addEventListener('click', close);
+      panel.appendChild(closeBtn);
+
+      // on a phone the card is a sheet: a grip that never scrolls away, and a
+      // body that does
+      if (!panel.querySelector('.bs-grip')) panel.appendChild(el('div', 'bs-grip'));
+      var body = el('div', 'bs-body');
+      panel.appendChild(body);
+
+      // the cover, or the cloth when we have no cover (and if a cover URL
+      // fails, the cloth is already behind it)
+      var cover = el('div', 'bs-cover');
+      cover.style.setProperty('--cloth', clothCss(b));
+      var mark = el('div', 'bs-cover-mark');
+      mark.appendChild(el('span', null, b.title));
+      if (b.author) mark.appendChild(el('small', null, b.author));
+      cover.appendChild(mark);
+      if (b.cover) {
+        var img = el('img');
+        img.src = b.cover;
+        img.alt = 'Cover of ' + b.title;
+        img.loading = 'eager';
+        img.decoding = 'async';
+        img.fetchPriority = 'high';
+        img.addEventListener('error', function () {
+          img.remove();
+        });
+        cover.appendChild(img);
+      }
+      body.appendChild(cover);
+
+      var detail = el('div', 'bs-detail');
+      detail.appendChild(el('h3', 'bs-ptitle', b.title));
+      if (b.subtitle) detail.appendChild(el('p', 'bs-psubtitle', b.subtitle));
+      if (b.author) detail.appendChild(el('p', 'bs-pauthor', b.author));
+      if (b.rating > 0) detail.appendChild(starsOf(b.rating));
+
+      var chips = [statusLabel(b.status)];
+      if (b.series) chips.push(b.series);
+      b.genres.forEach(function (g) {
+        chips.push(g);
+      });
+      if (b.year) chips.push(String(b.year));
+      if (b.pages) chips.push(b.pages + ' pages');
+      if (b.finished) chips.push('finished ' + day(b.finished));
+      else if (b.started) chips.push('started ' + day(b.started));
+      else if (b.added) chips.push('added ' + day(b.added));
+      var list = el('ul', 'bs-chips');
+      chips.forEach(function (c) {
+        list.appendChild(el('li', null, c));
+      });
+      detail.appendChild(list);
+
+      if (b.review) {
+        var rev = el('blockquote', 'bs-review');
+        rev.appendChild(el('span', 'bs-review-label', 'review'));
+        rev.appendChild(el('p', null, b.review));
+        detail.appendChild(rev);
+      }
+
+      var links = el('div', 'bs-links');
+      var copy = el('button', null, 'Copy link');
+      copy.type = 'button';
+      copy.addEventListener('click', function () {
+        var url = location.origin + location.pathname + '?book=' + encodeURIComponent(b.slug);
+        var said = function (ok) {
+          copy.textContent = ok ? 'Copied' : 'In the address bar';
+          window.setTimeout(function () {
+            copy.textContent = 'Copy link';
+          }, 1600);
+        };
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(url).then(
+            function () {
+              said(true);
+            },
+            function () {
+              said(false);
+            }
+          );
+        } else said(false);
+      });
+      links.appendChild(copy);
+      detail.appendChild(links);
+      body.appendChild(detail);
+
+      modal.showModal();
+      // the page must not scroll behind the dialog, and must not jump either
+      var gap = window.innerWidth - document.documentElement.clientWidth;
+      document.documentElement.style.overflow = 'hidden';
+      if (gap > 0) document.documentElement.style.paddingRight = gap + 'px';
+      if (location.protocol !== 'file:') {
+        try {
+          history.replaceState(null, '', location.pathname + '?book=' + encodeURIComponent(b.slug) + location.hash);
+        } catch (e) {
+          /* history can be blocked; the button still copies the right link */
+        }
+      }
+      // let the transition run
+      window.requestAnimationFrame(function () {
+        panel.classList.add('is-in');
+      });
+      panel.focus({ preventScroll: true });
+      panel.scrollTop = 0;
+      brief();
+    }
+
+    function close() {
+      if (!open) return;
+      var btn = open.btn;
+      open = null;
+      panel.classList.remove('is-in');
+      btn.classList.remove('is-open');
+      btn.setAttribute('aria-expanded', 'false');
+      window.setTimeout(function () {
+        if (open) return;
+        if (modal.open) modal.close();
+        document.documentElement.style.overflow = '';
+        document.documentElement.style.paddingRight = '';
+      }, 170);
+      if (location.protocol !== 'file:') {
+        try {
+          history.replaceState(null, '', location.pathname + location.hash);
+        } catch (e) {
+          /* nothing to do */
+        }
+      }
+      // the dialog hands focus back to the spine by itself; this is a safety
+      // net for the reduced-motion path where nothing was shown
+      if (document.activeElement === document.body) btn.focus({ preventScroll: true });
+    }
+
+    // ---- the readout under the case ---------------------------------------
+    // fetch a cover before it is needed: the files are local WebP, so this is
+    // a few tens of KB from the site's own cache, not a call to Hardcover
+    var warmed = {};
+    function warm(b) {
+      if (!b.cover || warmed[b.slug]) return;
+      warmed[b.slug] = true;
+      var im = new Image();
+      im.src = b.cover;
+    }
+
+    function brief() {
+      var read = books.filter(function (b) {
+        return b.status === 'read';
+      }).length;
+      var reading = books.filter(function (b) {
+        return b.status === 'reading';
+      }).length;
+      var tore = books.filter(function (b) {
+        return b.status === 'to-read';
+      }).length;
+      var favorites = books.filter(function (b) {
+        return b.shelf === 'favorites';
+      }).length;
+      var parts = [books.length + (books.length === 1 ? ' book' : ' books')];
+      if (reading) parts.push(reading + ' reading');
+      if (tore) parts.push(tore + ' to read');
+      if (read) parts.push(read + ' read');
+      if (favorites) parts.push(favorites + ' favorites');
+      readout.textContent = parts.join(' \u00b7 ');
+      // a key for a status the shelf does not have is noise
+      root.querySelectorAll('.bs-key').forEach(function (key) {
+        var wanted = key.classList.contains('bs-key-ribbon') ? reading : tore;
+        key.hidden = !wanted;
+      });
+    }
+
+    function describe(b) {
+      var bits = [];
+      if (b.year) bits.push(String(b.year));
+      if (b.pages) bits.push(b.pages + ' pp');
+      bits.push(statusLabel(b.status));
+      readout.textContent = b.title + ' \u00b7 ' + bits.join(' \u00b7 ');
+    }
+
+    // ---- keyboard --------------------------------------------------------
+    function focusSpine(n) {
+      if (!domOrder.length) return;
+      var at = -1;
+      domOrder.forEach(function (b, i) {
+        if (Number(b.dataset.i) === n) at = i;
+      });
+      if (at === -1) at = 0;
+      var next = clamp(at, 0, domOrder.length - 1);
+      domOrder.forEach(function (b, i) {
+        b.tabIndex = i === next ? 0 : -1;
+      });
+      focusI = Number(domOrder[next].dataset.i);
+      domOrder[next].focus();
+    }
+
+    // arrows walk the whole case, shelf after shelf
+    shelvesEl.addEventListener('keydown', function (e) {
+      var btn = e.target.closest ? e.target.closest('.bs-book') : null;
+      if (!btn) return;
+      var i = Number(btn.dataset.i);
+      var forward = e.key === 'ArrowRight' || e.key === 'ArrowDown';
+      var back = e.key === 'ArrowLeft' || e.key === 'ArrowUp';
+      if (forward || back) {
+        e.preventDefault();
+        var at = -1;
+        domOrder.forEach(function (b, ix) {
+          if (Number(b.dataset.i) === i) at = ix;
+        });
+        at += forward ? 1 : -1;
+        if (at < 0) at = 0;
+        if (at > domOrder.length - 1) at = domOrder.length - 1;
+        focusSpine(Number(domOrder[at].dataset.i));
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        if (domOrder.length) focusSpine(Number(domOrder[0].dataset.i));
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        if (domOrder.length) focusSpine(Number(domOrder[domOrder.length - 1].dataset.i));
+      }
+    });
+
+    modal.addEventListener('click', function (e) {
+      if (open && e.target === modal) close();
+    });
+
+    modal.addEventListener('keydown', function (e) {
+      if (e.key !== 'Tab' || !open) return;
+      var items = panel.querySelectorAll('button, a[href]');
+      if (!items.length) return;
+      var first = items[0];
+      var last = items[items.length - 1];
+      var at = document.activeElement;
+      if (e.shiftKey && (at === first || at === panel)) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && at === last) {
+        e.preventDefault();
+        panel.focus({ preventScroll: true });
+      }
+    });
+
+    // Esc: the dialog's own cancel event, plus a document-level fallback for
+    // browsers that only fire the key event
+    // ---- phone: the card is a sheet, and a drag down dismisses it ---------
+    var isPhone = function () {
+      return window.matchMedia('(max-width: 640px)').matches;
+    };
+    var drag = null;
+
+    function sheetBody() {
+      return panel.querySelector('.bs-body');
+    }
+
+    panel.addEventListener('pointerdown', function (e) {
+      if (!isPhone() || !open) return;
+      var grip = e.target.closest ? e.target.closest('.bs-grip') : null;
+      var body = sheetBody();
+      // the grip always drags; the body only drags when it is scrolled to the
+      // top, so its own scrolling keeps working on a long review
+      if (!grip && !(body && body.scrollTop <= 0)) return;
+      drag = { y: e.clientY, at: Date.now(), dy: 0, body: body, fromGrip: !!grip };
+      panel.setPointerCapture(e.pointerId);
+      panel.style.transition = 'none';
+    });
+
+    panel.addEventListener('pointermove', function (e) {
+      if (!drag) return;
+      drag.dy = Math.max(0, e.clientY - drag.y);
+      // a drag that starts in the body gives way to its scrolling until the
+      // sheet itself is being pulled down
+      if (!drag.fromGrip && drag.body && drag.body.scrollTop > 0) {
+        drag.y = e.clientY;
+        drag.dy = 0;
+        return;
+      }
+      if (drag.dy > 4) e.preventDefault();
+      // damping past the natural edge, like a real drawer
+      var damped = drag.dy < 140 ? drag.dy : 140 + (drag.dy - 140) * 0.35;
+      panel.style.transform = 'translateY(' + damped + 'px)';
+      panel.style.opacity = String(Math.max(0.35, 1 - damped / 420));
+    });
+
+    function endDrag() {
+      if (!drag) return;
+      var dy = drag.dy;
+      var ms = Math.max(1, Date.now() - drag.at);
+      var velocity = dy / ms;
+      drag = null;
+      panel.style.transition = '';
+      panel.style.opacity = '';
+      panel.style.transform = '';
+      if (dy > 110 || velocity > 0.55) close();
+    }
+
+    panel.addEventListener('pointerup', endDrag);
+    panel.addEventListener('pointercancel', endDrag);
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && open) {
+        e.preventDefault();
+        close();
+      }
+    });
+
+    modal.addEventListener('cancel', function (e) {
+      // Esc: run our own close so the card animates out first
+      if (open) {
+        e.preventDefault();
+        close();
+      }
+    });
+
+    // ---- resize: only rebuild when the shelves actually change shape ------
+    var lastSig = '';
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function relayout() {
+      var sig = grouped()
+        .map(function (g) {
+          var rows = pack(g.books) || [];
+          return (
+            g.slug +
+            ':' +
+            rows
+              .map(function (r) {
+                return r.length;
+              })
+              .join('.')
+          );
+        })
+        .join('|');
+      if (sig === lastSig) return;
+      lastSig = sig;
+      var keep = open ? open.book : null;
+      render();
+      if (keep) show(keep, spines[keep.i]);
+    }
+
+    window.addEventListener('resize', function () {
+      window.clearTimeout(relayout.t);
+      relayout.t = window.setTimeout(relayout, 150);
+    });
+
+    // ---- an open book can be linked to: ?book=<slug> ----------------------
+    var wanted = /[?&]book=([^&#]+)/.exec(location.search);
+    render();
+    brief();
+    if (wanted) {
+      var slug = decodeURIComponent(wanted[1]);
+      var hit = null;
+      books.forEach(function (b) {
+        if (b.slug === slug) hit = b;
+      });
+      if (hit) {
+        focusI = hit.i;
+        show(hit, spines[hit.i]);
+      }
+    }
+  })();
+</script>

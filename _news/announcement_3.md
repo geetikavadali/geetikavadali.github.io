@@ -7,5 +7,3 @@ related_posts: false
 ---
 
 Paper Accepted - Comparing Nash Equilibrium Convergence for Rock-Paper-Scissors Algorithms at IEEE International Conference on Computing, Communication, and Intelligent Systems 2023, Sharda University, India
-
-

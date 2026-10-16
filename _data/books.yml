@@ -1,0 +1,334 @@
+# Books on the shelf, read from Hardcover by bin/sync_hardcover.py.
+#
+# GENERATED FILE - do not edit by hand. Re-run the sync instead:
+#     python3 bin/sync_hardcover.py
+# or let .github/workflows/sync-hardcover.yml run it on a schedule.
+#
+# hardcover.app/@geetening, synced 2026-10-14. 21 books: 3 currently-reading, 10 recently-read, 8 favorites.
+# Fields are documented in the script; every one of them is optional except title.
+
+- title: Love in the Time of Cholera
+  author: "Gabriel García Márquez"
+  cover: "/assets/img/books/love-in-the-time-of-cholera.webp"
+  status: reading
+  shelf: currently-reading
+  year: "1985"
+  pages: "348"
+  slug: love-in-the-time-of-cholera
+  added: 2026-08-26
+  genres: [Classics, Magical Realism, Historical, Fiction]
+  links:
+    hardcover: "https://hardcover.app/books/love-in-the-time-of-cholera"
+
+- title: Celebrating Delhi
+  author: Mala Dayal
+  cover: "/assets/img/books/celebrating-delhi.webp"
+  status: reading
+  shelf: currently-reading
+  year: "2010"
+  pages: "208"
+  slug: celebrating-delhi
+  added: 2026-07-21
+  links:
+    hardcover: "https://hardcover.app/books/celebrating-delhi"
+
+- title: The discovery of India
+  author: Jawaharlal Nehru
+  cover: "/assets/img/books/the-discovery-of-india.webp"
+  status: reading
+  shelf: currently-reading
+  year: "1946"
+  pages: "422"
+  slug: the-discovery-of-india
+  added: 2026-06-07
+  genres: [Classics, India, History]
+  links:
+    hardcover: "https://hardcover.app/books/the-discovery-of-india"
+
+- title: Ghachar Ghochar
+  author: Vivek Shanbhag
+  cover: "/assets/img/books/ghachar-ghochar.webp"
+  rating: 4
+  status: read
+  shelf: recently-read
+  year: "2013"
+  pages: "104"
+  finished: 2026-07-07
+  slug: ghachar-ghochar
+  genres: [Fiction, Families, Kannada fiction]
+  links:
+    hardcover: "https://hardcover.app/books/ghachar-ghochar"
+
+- title: The Loneliness of Sonia and Sunny
+  author: Kiran Desai
+  cover: "/assets/img/books/the-loneliness-of-sonia-and-sunny.webp"
+  rating: 3
+  status: read
+  shelf: recently-read
+  year: "2025"
+  pages: "656"
+  finished: 2026-05-30
+  slug: the-loneliness-of-sonia-and-sunny
+  genres: [Fiction]
+  review: |
+    2.5/5
+    if I hadn't read beyond 75%, I would have given it 3 stars, if I hadn't read beyond 30% I would have probably given it 4 stars. It just progressively linearly fell apart. There is one theme - loneliness, but it just doesn't justify the length and verbosity of this book. Not that I know much about editing technicalities, but I feel a good snipping would have elevated the novel so much. Better yet, if they had partitioned each individual subplot into a short story of its own, I'd read that.
+    It started out very well, and I was very excited after reading the first few chapters that okay - very relatable, very fresh (I love the delhi references albeit only lodhi gardens and hauz khas) and I could build the world of the story.
+    But when you want to span and descriptively explain every one of the 10 cities, give a character arc to more than 20 characters and introduce atleast 50 others to “add” to the plot, in the same novel, you do it usually at the expense of tiring out the reader. And I was dead tired.
+  links:
+    hardcover: "https://hardcover.app/books/the-loneliness-of-sonia-and-sunny"
+
+- title: The Complete Persepolis
+  subtitle: Volumes 1 and 2
+  author: Marjane Satrapi
+  cover: "/assets/img/books/the-complete-persepolis.webp"
+  rating: 3
+  status: read
+  shelf: recently-read
+  year: "2005"
+  pages: "341"
+  finished: 2026-05-27
+  slug: the-complete-persepolis
+  series: "Persepolis #1"
+  genres: [Biography, Comics & Graphic Novels, Graphic Novels, non-fiction]
+  review: |
+    there probably exist much better memoirs-living under war-coming of age books than this, but it is always helpful to read about someone's life experience that is so different to one's own. appreciate the art too actually.
+  links:
+    hardcover: "https://hardcover.app/books/the-complete-persepolis"
+
+- title: Stoner
+  author: John Williams
+  cover: "/assets/img/books/stoner.webp"
+  rating: 4
+  status: read
+  shelf: recently-read
+  year: "1965"
+  finished: 2026-01-16
+  slug: stoner
+  genres: [Classics, Fiction, Literature, History]
+  review: |
+    “It (University) is an asylum or —what do they call them now?—a rest home, for the infirm, the aged, the discontent, and the otherwise incompetent.”
+    “But bad as we are, we're better than those on the outside, in the muck, the poor bastards of the world. We do no harm, we say what we want, and we get paid for it; that's a triumph of natural virtue, or pretty damn close to it.”
+    (omg academia don't be so salty)
+    very easy read btw, love you stoner dude but you deserved better..
+  links:
+    hardcover: "https://hardcover.app/books/stoner"
+
+- title: The God of Small Things
+  author: Arundhati Roy
+  cover: "/assets/img/books/the-god-of-small-things.webp"
+  rating: 4
+  status: read
+  shelf: recently-read
+  year: "1997"
+  pages: "344"
+  finished: 2026-01-01
+  slug: the-god-of-small-things
+  genres: [Classics, Domestic fiction, Fiction, Romance]
+  review: |
+    I see it folks, I see it. I see the charm of this writing. How the author took a lot of tiny layered incidences and crafted all the ramifications of it, I see the beauty of it. I personally could have managed with less romantics and more actions, causalities but well that's just me. The writing is, I suppose, a little hard and wordy (as if Roy was told not to use the same adjectives ever again in the whole book once used).
+  links:
+    hardcover: "https://hardcover.app/books/the-god-of-small-things"
+
+- title: The Stranger
+  author: Albert Camus
+  cover: "/assets/img/books/the-stranger.webp"
+  rating: 5
+  status: read
+  shelf: recently-read
+  year: "1942"
+  pages: "134"
+  finished: 2025-09-21
+  slug: the-stranger
+  genres: [Classics, Fiction, Murder, Adventure]
+  links:
+    hardcover: "https://hardcover.app/books/the-stranger"
+
+- title: "Telugu: The Best Stories Of Our Times"
+  author: Volga & M. Sridhar & Alladi Uma
+  cover: "/assets/img/books/telugu.webp"
+  status: read
+  shelf: recently-read
+  year: "2022"
+  finished: 2025-08-08
+  slug: telugu
+  links:
+    hardcover: "https://hardcover.app/books/telugu"
+
+- title: "Heart Lamp: Selected Stories"
+  author: Banu Mushtaq
+  cover: "/assets/img/books/heart-lamp.webp"
+  rating: 5
+  status: read
+  shelf: recently-read
+  year: "2024"
+  pages: "222"
+  finished: 2025-06-16
+  slug: heart-lamp
+  genres: [Fiction, Muslim girls]
+  links:
+    hardcover: "https://hardcover.app/books/heart-lamp"
+
+- title: Human Acts
+  author: Han Kang
+  cover: "/assets/img/books/human-acts.webp"
+  rating: 3
+  status: read
+  shelf: recently-read
+  year: "2014"
+  pages: "241"
+  finished: 2025-05-26
+  slug: human-acts
+  genres: [Fiction, War, Politics, History]
+  review: |
+    one of most provocatively sad books i've read (I don't usually read sad books). it wrenches me to read and see so much cruelty and evil around us. it still exists somehow.
+
+    “Is it true that human beings are fundamentally cruel? Is the experience of cruelty the only thing we share as a species? Is the dignity that we cling to nothing but self-delusion, masking from ourselves the single truth: that each one of us is capable of being reduced to an insect, a ravening beast, a lump of meat? To be degraded, slaughtered - is this the essential of humankind, one which history has confirmed as inevitable?”
+
+    i'd say the language got too convoluted and confusing at times, switching from first person to second to third as the characters and times changed. would read the vegetarian soon though.
+  links:
+    hardcover: "https://hardcover.app/books/human-acts"
+
+- title: Death of a Salesman
+  subtitle: Certain Private Conversations in Two Acts and a Requiem
+  author: Arthur Miller
+  cover: "/assets/img/books/death-of-a-salesman.webp"
+  rating: 5
+  status: read
+  shelf: recently-read
+  year: "1949"
+  pages: "139"
+  finished: 2025-03-16
+  slug: death-of-a-salesman
+  genres: [Classics, Fiction, Plays, General]
+  review: |
+    i love me a lot of aha moments as much as I love reading plays
+  links:
+    hardcover: "https://hardcover.app/books/death-of-a-salesman"
+
+- title: The Last Lecture
+  author: Randy Pausch & Jeffrey Zaslow
+  cover: "/assets/img/books/the-last-lecture.webp"
+  rating: 5
+  status: read
+  shelf: favorites
+  year: "2008"
+  pages: "209"
+  finished: 2020-05-25
+  slug: the-last-lecture
+  genres: [Classics, Nonfiction, Memoir, Self-Help]
+  links:
+    hardcover: "https://hardcover.app/books/the-last-lecture"
+
+- title: Three Men in a Boat
+  subtitle: "Stage 4: Three Men in a Boat"
+  author: Jerome K. Jerome
+  cover: "/assets/img/books/three-men-in-a-boat.webp"
+  rating: 5
+  status: read
+  shelf: favorites
+  year: "1889"
+  pages: "112"
+  slug: three-men-in-a-boat
+  added: 2019-07-27
+  series: "Three Men #1"
+  genres: [Classics, Fiction, Adventure, Humor]
+  links:
+    hardcover: "https://hardcover.app/books/three-men-in-a-boat"
+
+- title: To Kill A Mockingbird
+  author: Harper Lee
+  cover: "/assets/img/books/to-kill-a-mockingbird.webp"
+  rating: 5
+  status: read
+  shelf: favorites
+  year: "1960"
+  pages: "320"
+  finished: 2021-02-05
+  slug: to-kill-a-mockingbird
+  series: "To Kill a Mockingbird #1"
+  genres: [Classics, Fiction, Historical Fiction, Young Adult]
+  links:
+    hardcover: "https://hardcover.app/books/to-kill-a-mockingbird"
+
+- title: A Room of One's Own
+  author: Virginia Woolf
+  cover: "/assets/img/books/a-room-of-ones-own.webp"
+  rating: 5
+  status: read
+  shelf: favorites
+  year: "1903"
+  pages: "93"
+  finished: 2022-06-25
+  slug: a-room-of-ones-own
+  genres: [Literature, History, Women, English fiction]
+  links:
+    hardcover: "https://hardcover.app/books/a-room-of-ones-own"
+
+- title: "Algorithms to Live By: The Computer Science of Human Decisions"
+  author: Tom Griffiths & Brian Christian
+  cover: "/assets/img/books/algorithms-to-live-by.webp"
+  rating: 5
+  status: read
+  shelf: favorites
+  year: "2016"
+  pages: "366"
+  finished: 2023-07-27
+  slug: algorithms-to-live-by
+  genres: [Mathematics, Nonfiction, Science, Computers]
+  links:
+    hardcover: "https://hardcover.app/books/algorithms-to-live-by"
+
+- title: When We Cease to Understand the World
+  author: "Benjamín Labatut"
+  cover: "/assets/img/books/when-we-cease-to-understand-the-world.webp"
+  rating: 5
+  status: read
+  shelf: favorites
+  year: "2019"
+  pages: "192"
+  finished: 2023-06-11
+  slug: when-we-cease-to-understand-the-world
+  genres: [Fiction, Science Fiction, War, Creative ability in science]
+  review: |
+    Ahh i am 2 chapters in, and I love love this book. It talks about the madness in genius, short chapters on some of the genius from the past as well as from our time. It doesn't stick to them but goes around, meanders over other smaller details and i love how the author does that.
+    pretty small book so highly recommend :)
+
+    after finishing -
+    First of all, what a title. Secondly, what a cover. Thirdly, what a theme. Wehn i talk about authors writing books like they are conversing with you one-on-one, this is what I mean. Ebbing and flowing paces, taking time to explore some tiny interesting idea, keeping it short but oh so readable. This book talks about the cracks in genius, the insanity that it takes to have made the insane leaps in intellect as these men did (mind yes, no women has been included in this book at the capacity of being the force, they are merely sisters, wifes, or in case of Schrodinger, a the object of his pedophilic fantasies). Keeping that aside, i really enjoyed this juicy physics-party-talk book.
+
+    Highly recommend to people with even high school background in science and stuff, makes you visualise people better ig.
+  links:
+    hardcover: "https://hardcover.app/books/when-we-cease-to-understand-the-world"
+
+- title: The Maniac
+  author: "Benjamín Labatut"
+  cover: "/assets/img/books/the-maniac.webp"
+  rating: 5
+  status: read
+  shelf: favorites
+  year: "2023"
+  pages: "298"
+  finished: 2023-12-20
+  slug: the-maniac
+  genres: [Fiction, Science Fiction, Historical Fiction, Literary Fiction]
+  review: |
+    Very well written and coherent in its facts. Love this sort of writing amalgamating science with fiction and psychology.
+    Looking forward to Benjamin's future work
+  links:
+    hardcover: "https://hardcover.app/books/the-maniac"
+
+- title: And Then There Were None
+  subtitle: B2
+  author: Agatha Christie
+  cover: "/assets/img/books/and-then-there-were-none-b2-1939.webp"
+  status: read
+  shelf: favorites
+  year: "1939"
+  pages: "116"
+  finished: 2020-10-11
+  slug: and-then-there-were-none-b2-1939
+  series: "Agatha Christie Graphic Novels #3"
+  genres: [Mystery, Fiction, Classics, Thriller]
+  links:
+    hardcover: "https://hardcover.app/books/and-then-there-were-none-b2-1939"
