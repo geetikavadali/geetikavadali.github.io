@@ -1,3 +1,19 @@
+{%- comment -%}
+  Flippable sketchbook. Every page image is fetched once, up front (a few at a
+  time, nearest spread first) and decoded before it can be shown, so turning a
+  page never waits on the network. See _data/sketches.yml for the spreads.
+{%- endcomment -%}
+{%- assign sb_first = site.data.sketches.first -%}
+{%- if sb_first.image -%}
+  <link rel="preload" as="image" href="{{ sb_first.image }}" fetchpriority="high">
+{%- else -%}
+  {%- if sb_first.left -%}
+    <link rel="preload" as="image" href="{{ sb_first.left }}" fetchpriority="high">
+  {%- endif -%}
+  {%- if sb_first.right -%}
+    <link rel="preload" as="image" href="{{ sb_first.right }}" fetchpriority="high">
+  {%- endif -%}
+{%- endif -%}
 <div class="sketchbook">
   {% for s in site.data.sketches %}
     <template
@@ -23,18 +39,20 @@
     </button>
     <div class="sb-book">
       <div class="sb-base">
-        <div class="sb-half sb-half-l"></div>
-        <div class="sb-half sb-half-r"></div>
+        <div class="sb-half sb-half-l"><img class="sb-img" alt="" decoding="async" draggable="false"></div>
+        <div class="sb-half sb-half-r"><img class="sb-img" alt="" decoding="async" draggable="false"></div>
       </div>
       <div class="sb-cast sb-cast-left"></div>
       <div class="sb-cast sb-cast-right"></div>
       <div class="sb-sheet is-hidden">
-        <div class="sb-face sb-front"></div>
-        <div class="sb-face sb-back"></div>
+        <div class="sb-face sb-front"><img class="sb-img" alt="" decoding="async" draggable="false"></div>
+        <div class="sb-face sb-back"><img class="sb-img" alt="" decoding="async" draggable="false"></div>
         <div class="sb-shade"></div>
       </div>
+      <div class="sb-wait" aria-hidden="true"></div>
       <button class="sb-zone sb-zone-prev" type="button" tabindex="-1" aria-hidden="true"></button>
       <button class="sb-zone sb-zone-next" type="button" tabindex="-1" aria-hidden="true"></button>
+      <div class="sb-progress" aria-hidden="true"><span></span></div>
     </div>
     <button class="sb-arrow sb-next" type="button" aria-label="next spread">
       <svg viewBox="0 0 14 44" width="14" height="44" fill="none" aria-hidden="true">
@@ -47,7 +65,7 @@
       </svg>
     </button>
   </div>
-  <p class="sb-caption">{{ site.data.sketches.first.title }}</p>
+  <p class="sb-caption" aria-live="polite">{{ site.data.sketches.first.title }}</p>
 </div>
 <script>
   (function () {
@@ -55,38 +73,179 @@
     if (!root) return;
 
     var spreads = Array.prototype.map.call(root.querySelectorAll('.sb-src'), function (t) {
-      return {
+      var spread = {
         image: t.dataset.image,
         left: t.dataset.left,
         right: t.dataset.right,
         title: t.dataset.title,
         w: parseInt(t.dataset.w, 10),
-        h: parseInt(t.dataset.h, 10)
+        h: parseInt(t.dataset.h, 10),
+        urls: [],
+        pending: 0,
       };
+      if (spread.image) spread.urls.push(spread.image);
+      else {
+        if (spread.left) spread.urls.push(spread.left);
+        if (spread.right) spread.urls.push(spread.right);
+      }
+      spread.pending = spread.urls.length;
+      return spread;
     });
     if (!spreads.length) return;
 
-    function setHalf(el, s, side) {
-      var src = side === 'left' ? s.left : s.right;
-      if (s.image) {
-        el.style.backgroundImage = 'url("' + s.image + '")';
-        el.style.backgroundSize = '200% 100%';
-        el.style.backgroundPosition = side === 'left' ? '0% 50%' : '100% 50%';
-      } else if (src) {
-        el.style.backgroundImage = 'url("' + src + '")';
-        el.style.backgroundSize = '100% 100%';
-        el.style.backgroundPosition = '50% 50%';
-      } else {
-        el.style.backgroundImage = 'none';
+    var book = root.querySelector('.sb-book');
+    var baseL = root.querySelector('.sb-half-l');
+    var baseR = root.querySelector('.sb-half-r');
+    var sheet = root.querySelector('.sb-sheet');
+    var front = sheet.querySelector('.sb-front');
+    var back = sheet.querySelector('.sb-back');
+    var caption = root.querySelector('.sb-caption');
+    var prevBtn = root.querySelector('.sb-arrow.sb-prev');
+    var nextBtn = root.querySelector('.sb-arrow.sb-next');
+    var zonePrev = root.querySelector('.sb-zone-prev');
+    var zoneNext = root.querySelector('.sb-zone-next');
+    var bar = root.querySelector('.sb-progress span');
+
+    // ---- preloading -----------------------------------------------------
+    // Each page is fetched once and decoded up front, a few at a time, so no
+    // flip ever waits on the network. Anything the reader asks for jumps the
+    // queue; anything already fetched is shown straight away.
+    var MAX_PARALLEL = 3;
+    var status = {};
+    var held = []; // keep the loaded pages alive for the whole session
+    var queue = [];
+    var inflight = 0;
+    var settled = 0;
+    var allUrls = [];
+
+    spreads.forEach(function (s) {
+      s.urls.forEach(function (url) {
+        if (allUrls.indexOf(url) === -1) allUrls.push(url);
+      });
+    });
+
+    function report() {
+      if (!allUrls.length) {
+        root.classList.add('sb-loaded');
+        return;
+      }
+      if (bar) bar.style.width = Math.round((settled / allUrls.length) * 100) + '%';
+      if (settled >= allUrls.length) root.classList.add('sb-loaded');
+    }
+
+    function settle(url, ok) {
+      if (status[url] === 'ready' || status[url] === 'error') return;
+      status[url] = ok ? 'ready' : 'error';
+      inflight--;
+      settled++;
+      if (!ok) console.warn('sketchbook: could not load ' + url);
+      spreads.forEach(function (s) {
+        if (s.pending && s.urls.indexOf(url) !== -1) s.pending--;
+      });
+      if (ok) reveal(url);
+      report();
+      pump();
+      syncChrome();
+      flushPending();
+    }
+
+    function load(url) {
+      if (status[url]) return;
+      status[url] = 'loading';
+      inflight++;
+      var im = new Image();
+      held.push(im);
+      im.decoding = 'async';
+      function done() {
+        settle(url, true);
+      }
+      im.onload = function () {
+        // decoding now keeps the main thread free when the page turns
+        if (im.decode) im.decode().then(done, done);
+        else done();
+      };
+      im.onerror = function () {
+        settle(url, false);
+      };
+      im.src = url;
+    }
+
+    function pump() {
+      while (queue.length && inflight < MAX_PARALLEL) load(queue.shift());
+    }
+
+    function preload(url) {
+      if (status[url] || queue.indexOf(url) !== -1) return;
+      queue.push(url);
+      pump();
+    }
+
+    function demand(url) {
+      if (status[url]) return;
+      var at = queue.indexOf(url);
+      if (at !== -1) queue.splice(at, 1);
+      load(url);
+    }
+
+    function demandSpread(s) {
+      s.urls.forEach(demand);
+    }
+
+    function reveal(url) {
+      var imgs = root.querySelectorAll('.sb-img');
+      for (var i = 0; i < imgs.length; i++) {
+        if (imgs[i].getAttribute('data-sb-url') === url) imgs[i].classList.add('is-ready');
       }
     }
 
-    function setSpreadHalves(s) {
-      setHalf(baseL, s, 'left');
-      setHalf(baseR, s, 'right');
+    // nearest spreads first, so the page being read and the ones right after
+    // it arrive before the rest of the book
+    function preloadAround(center) {
+      for (var d = 1; d < spreads.length; d++) {
+        if (center + d < spreads.length) spreads[center + d].urls.forEach(preload);
+        if (center - d >= 0) spreads[center - d].urls.forEach(preload);
+      }
     }
 
-    // motion-blur filter defs (built via DOM so kramdown cannot lowercase them)
+    // ---- painting -------------------------------------------------------
+    // `side` is where the half sits in the book: the left page of a spread is
+    // shown by the left half (and by the back of the turning sheet), the right
+    // page by the right half.
+    function paint(el, s, side) {
+      var img = el.firstElementChild;
+      var url = s.image || (side === 'left' ? s.left : s.right);
+      if (!url) {
+        img.classList.remove('is-ready', 'is-inst');
+        img.removeAttribute('src');
+        img.removeAttribute('data-sb-url');
+        return;
+      }
+      if (s.image) {
+        // a single wide spread image: crop it to the half this side shows
+        img.style.width = '200%';
+        img.style.left = side === 'left' ? '0' : 'auto';
+        img.style.right = side === 'right' ? '0' : 'auto';
+      } else {
+        img.style.width = '100%';
+        img.style.left = '0';
+        img.style.right = 'auto';
+      }
+      if (img.getAttribute('data-sb-url') === url) return;
+      // a page that is already decoded can appear at once; one that still has
+      // to arrive fades in when it does (see reveal)
+      var here = status[url] === 'ready';
+      img.classList.toggle('is-inst', here);
+      img.setAttribute('data-sb-url', url);
+      img.classList.toggle('is-ready', here);
+      img.setAttribute('src', url);
+    }
+
+    function setSpreadHalves(s) {
+      paint(baseL, s, 'left');
+      paint(baseR, s, 'right');
+    }
+
+    // ---- motion-blur filter defs (built via DOM so kramdown cannot lowercase them)
     var svgns = 'http://www.w3.org/2000/svg';
     var svg = document.createElementNS(svgns, 'svg');
     svg.setAttribute('width', '0');
@@ -104,18 +263,6 @@
     });
     root.insertBefore(svg, root.firstChild);
 
-    var book = root.querySelector('.sb-book');
-    var baseL = root.querySelector('.sb-half-l');
-    var baseR = root.querySelector('.sb-half-r');
-    var sheet = root.querySelector('.sb-sheet');
-    var front = sheet.querySelector('.sb-front');
-    var back = sheet.querySelector('.sb-back');
-    var caption = root.querySelector('.sb-caption');
-    var prevBtn = root.querySelector('.sb-arrow.sb-prev');
-    var nextBtn = root.querySelector('.sb-arrow.sb-next');
-    var zonePrev = root.querySelector('.sb-zone-prev');
-    var zoneNext = root.querySelector('.sb-zone-next');
-
     var DURATION = 720;
     var EASING = 'cubic-bezier(0.55, 0.06, 0.35, 1)';
     var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -123,6 +270,7 @@
 
     var index = 0;
     var flipping = false;
+    var pendingDir = 0;
     var timers = [];
 
     function later(fn, t) {
@@ -144,6 +292,13 @@
       nextBtn.disabled = last;
     }
 
+    // the spinner covers the page still on its way (or the very first one)
+    function syncChrome() {
+      var busy = !!pendingDir || spreads[index].pending > 0;
+      root.classList.toggle('is-loading', busy);
+      book.setAttribute('aria-busy', busy ? 'true' : 'false');
+    }
+
     function setCaption(text) {
       if (caption.textContent === text) return;
       caption.classList.add('is-fading');
@@ -163,31 +318,24 @@
       root.classList.remove('sb-casting-left', 'sb-casting-right');
       flipping = false;
       updateChrome();
+      syncChrome();
+      // keep the page the reader is heading towards loaded first
+      if (index + 1 < spreads.length) demandSpread(spreads[index + 1]);
+      flushPending();
     }
 
-    function flip(dir) {
-      if (flipping) return;
+    function runFlip(dir) {
       var target = index + dir;
-      if (target < 0 || target >= spreads.length) return;
-
-      if (reduced) {
-        index = target;
-        setSpreadHalves(spreads[index]);
-        caption.textContent = spreads[index].title;
-        updateChrome();
-        return;
-      }
-
       flipping = true;
 
       if (dir === 1) {
-        setHalf(front, spreads[index], 'right');
-        setHalf(back, spreads[target], 'left');
+        paint(front, spreads[index], 'right');
+        paint(back, spreads[target], 'left');
         sheet.style.transition = 'none';
         sheet.style.transform = 'rotateY(0deg)';
       } else {
-        setHalf(front, spreads[target], 'right');
-        setHalf(back, spreads[index], 'left');
+        paint(front, spreads[target], 'right');
+        paint(back, spreads[index], 'left');
         sheet.style.transition = 'none';
         sheet.style.transform = 'rotateY(-180deg)';
       }
@@ -229,6 +377,49 @@
       later(finish, DURATION + 140);
     }
 
+    function apply(dir) {
+      var target = index + dir;
+      if (reduced) {
+        index = target;
+        setSpreadHalves(spreads[index]);
+        caption.textContent = spreads[index].title;
+        updateChrome();
+        syncChrome();
+        if (index + 1 < spreads.length) demandSpread(spreads[index + 1]);
+        return;
+      }
+      runFlip(dir);
+    }
+
+    function flip(dir) {
+      if (flipping) return;
+      var target = index + dir;
+      if (target < 0 || target >= spreads.length) return;
+
+      if (spreads[target].pending) {
+        // that page is still on its way: hold the turn until it can be shown
+        pendingDir = dir;
+        demandSpread(spreads[target]);
+        syncChrome();
+        return;
+      }
+
+      pendingDir = 0;
+      syncChrome();
+      apply(dir);
+    }
+
+    // a turn that was waiting on an image starts as soon as the image is here
+    function flushPending() {
+      if (!pendingDir || flipping) return;
+      var dir = pendingDir;
+      var target = index + dir;
+      if (target < 0 || target >= spreads.length || spreads[target].pending) return;
+      pendingDir = 0;
+      syncChrome();
+      apply(dir);
+    }
+
     zonePrev.addEventListener('click', function () {
       flip(-1);
     });
@@ -256,24 +447,17 @@
     document.addEventListener('keydown', function (e) {
       if (e.altKey || e.ctrlKey || e.metaKey) return;
       var t = e.target;
-      if (
-        t &&
-        (t.tagName === 'INPUT' ||
-          t.tagName === 'TEXTAREA' ||
-          t.tagName === 'SELECT' ||
-          t.isContentEditable)
-      ) return;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
       if (e.key === 'ArrowRight') flip(1);
       else if (e.key === 'ArrowLeft') flip(-1);
-    });
-
-    spreads.forEach(function (s) {
-      var im = new Image();
-      im.src = s.image;
     });
 
     book.style.aspectRatio = spreads[0].w + ' / ' + spreads[0].h;
     setSpreadHalves(spreads[0]);
     updateChrome();
+    report();
+    syncChrome();
+    spreads[0].urls.forEach(demand);
+    preloadAround(0);
   })();
 </script>
